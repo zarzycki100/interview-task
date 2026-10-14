@@ -6,6 +6,8 @@ namespace Modules\Invoices\Domain;
 
 use Modules\Invoices\Domain\Enums\StatusEnum;
 use Modules\Invoices\Domain\Exceptions\InvalidInvoice;
+use Modules\Invoices\Domain\Exceptions\InvalidStatusTransition;
+use Modules\Invoices\Domain\Exceptions\InvoiceCannotBeSent;
 use Modules\Invoices\Domain\ValueObjects\Customer;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
 use Modules\Invoices\Domain\ValueObjects\ProductLine;
@@ -18,7 +20,7 @@ final class Invoice
     private function __construct(
         private readonly InvoiceId $id,
         private readonly Customer $customer,
-        private readonly StatusEnum $status,
+        private StatusEnum $status,
         private readonly array $productLines,
         private readonly int $version,
     ) {}
@@ -77,6 +79,34 @@ final class Invoice
     public function totalPrice(): int
     {
         return self::sumOfLineTotals($this->productLines);
+    }
+
+    public function send(): void
+    {
+        if ($this->status !== StatusEnum::Draft) {
+            throw InvoiceCannotBeSent::notADraft();
+        }
+
+        if ($this->productLines === []) {
+            throw InvoiceCannotBeSent::withoutProductLines();
+        }
+
+        foreach ($this->productLines as $line) {
+            if (! $line->hasPositiveAmounts()) {
+                throw InvoiceCannotBeSent::withInvalidProductLines();
+            }
+        }
+
+        $this->status = StatusEnum::Sending;
+    }
+
+    public function revertToDraftAfterFailedHandOff(): void
+    {
+        if ($this->status !== StatusEnum::Sending) {
+            throw InvalidStatusTransition::between($this->status, StatusEnum::Draft);
+        }
+
+        $this->status = StatusEnum::Draft;
     }
 
     /**

@@ -38,6 +38,11 @@ final readonly class ProductLine
         return new self($name, $quantity, $unitPrice);
     }
 
+    public function hasPositiveAmounts(): bool
+    {
+        return $this->quantity > 0 && $this->unitPrice > 0;
+    }
+
     public function totalUnitPrice(): int
     {
         return $this->quantity * $this->unitPrice;
