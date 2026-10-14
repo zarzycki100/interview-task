@@ -28,7 +28,7 @@ final class Invoice
      */
     public static function draft(InvoiceId $id, Customer $customer, array $productLines): self
     {
-        self::sumOfLineTotals($productLines);
+        self::assertTotalPriceFitsAnInteger($productLines);
 
         return new self($id, $customer, StatusEnum::Draft, $productLines, 0);
     }
@@ -77,6 +77,14 @@ final class Invoice
     public function totalPrice(): int
     {
         return self::sumOfLineTotals($this->productLines);
+    }
+
+    /**
+     * @param  list<ProductLine>  $productLines
+     */
+    private static function assertTotalPriceFitsAnInteger(array $productLines): void
+    {
+        self::sumOfLineTotals($productLines);
     }
 
     /**
