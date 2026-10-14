@@ -17,7 +17,7 @@ final class ExceptionMapping
         $exceptions->dontReport([InvalidInvoice::class, InvoiceNotFound::class]);
 
         $exceptions->render(static fn (InvalidInvoice $e): JsonResponse => new JsonResponse(
-            ['message' => $e->getMessage()],
+            ['message' => $e->getMessage(), 'errors' => ['invoice' => [$e->getMessage()]]],
             Response::HTTP_UNPROCESSABLE_ENTITY,
         ));
 

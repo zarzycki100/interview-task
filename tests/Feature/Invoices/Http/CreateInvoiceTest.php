@@ -107,6 +107,20 @@ final class CreateInvoiceTest extends TestCase
         yield 'unit price above 2^31-1' => [$line(['unit_price' => 2_147_483_648]), 'product_lines.0.unit_price'];
     }
 
+    public function test_a_total_that_does_not_fit_an_integer_is_rejected_with_validation_errors(): void
+    {
+        $maxLine = ['name' => 'Item', 'quantity' => 2_147_483_647, 'unit_price' => 2_147_483_647];
+
+        $this->postJson('/api/invoices', [
+            'customer_name' => 'Jane Doe',
+            'customer_email' => 'jane@example.com',
+            'product_lines' => [$maxLine, $maxLine, $maxLine],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['invoice']);
+        $this->assertDatabaseCount('invoices', 0);
+    }
+
     public function test_creating_an_invoice_sends_no_notification(): void
     {
         $this->mock(NotificationFacadeInterface::class)->shouldNotReceive('notify');
