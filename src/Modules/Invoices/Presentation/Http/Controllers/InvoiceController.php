@@ -28,7 +28,7 @@ final readonly class InvoiceController
         return new JsonResponse(
             data: InvoiceResponse::fromView($invoice),
             status: Response::HTTP_CREATED,
-            headers: ['Location' => route('invoices.show', ['invoice' => $invoice->id])],
+            headers: ['Location' => route('invoices.show', ['invoice' => $invoice->id], absolute: false)],
         );
     }
 

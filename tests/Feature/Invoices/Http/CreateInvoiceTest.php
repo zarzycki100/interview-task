@@ -20,10 +20,12 @@ final class CreateInvoiceTest extends TestCase
                 ['name' => 'Licence', 'quantity' => 3, 'unit_price' => 999],
             ],
         ]);
+        $id = $response->json('id');
+        $this->assertIsString($id);
 
         $response->assertCreated()
             ->assertExactJson([
-                'id' => $response->json('id'),
+                'id' => $id,
                 'status' => 'draft',
                 'customer_name' => 'Jane Doe',
                 'customer_email' => 'jane@example.com',
@@ -33,8 +35,8 @@ final class CreateInvoiceTest extends TestCase
                 ],
                 'total_price' => 32_997,
             ])
-            ->assertHeader('Location', route('invoices.show', ['invoice' => $response->json('id')]));
-        $this->assertDatabaseHas('invoices', ['id' => $response->json('id'), 'status' => 'draft']);
+            ->assertHeader('Location', '/api/invoices/'.$id);
+        $this->assertDatabaseHas('invoices', ['id' => $id, 'status' => 'draft']);
         $this->assertDatabaseCount('invoice_product_lines', 2);
     }
 
@@ -119,6 +121,18 @@ final class CreateInvoiceTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['invoice']);
         $this->assertDatabaseCount('invoices', 0);
+    }
+
+    public function test_the_location_header_ignores_the_client_supplied_host(): void
+    {
+        $response = $this->withHeader('Host', 'attacker.example')->postJson('/api/invoices', [
+            'customer_name' => 'Jane Doe',
+            'customer_email' => 'jane@example.com',
+            'product_lines' => [],
+        ]);
+
+        $response->assertCreated();
+        $this->assertStringNotContainsString('attacker.example', (string) $response->headers->get('Location'));
     }
 
     public function test_creating_an_invoice_sends_no_notification(): void
