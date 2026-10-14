@@ -10,4 +10,8 @@ export WWWGROUP="${WWWGROUP:-$(id -g)}"
 docker compose up --build --remove-orphans -d
 docker compose exec -T -u sail app composer install
 
+if ! grep -qE '^APP_KEY=.+' .env; then
+    docker compose exec -T -u sail app php artisan key:generate
+fi
+
 docker compose exec -T -u sail app php artisan migrate:fresh --seed
