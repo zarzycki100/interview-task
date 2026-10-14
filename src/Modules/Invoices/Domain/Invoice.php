@@ -100,6 +100,15 @@ final class Invoice
         $this->status = StatusEnum::Sending;
     }
 
+    public function markAsDelivered(): void
+    {
+        if ($this->status !== StatusEnum::Sending) {
+            throw InvalidStatusTransition::between($this->status, StatusEnum::SentToClient);
+        }
+
+        $this->status = StatusEnum::SentToClient;
+    }
+
     public function revertToDraftAfterFailedHandOff(): void
     {
         if ($this->status !== StatusEnum::Sending) {
