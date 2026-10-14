@@ -6,6 +6,7 @@ parameters:
     level: max
     tmpDir: storage/framework/cache/phpstan
     paths:
+        - app
         - src
         - tests
     excludePaths:
