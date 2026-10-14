@@ -45,7 +45,8 @@ final class ModuleBoundariesTest
                 Selector::inNamespace('Modules\Invoices\Application'),
                 Selector::inNamespace('Modules\Invoices\Presentation'),
             )
-            ->shouldNotDependOn()
+            ->shouldNot()
+            ->dependOn()
             ->classes(Selector::inNamespace('Modules\Notifications'))
             ->because('the notifications adapter in Infrastructure is the anti-corruption layer (ADR-001)');
     }
@@ -54,7 +55,8 @@ final class ModuleBoundariesTest
     {
         return PHPat::rule()
             ->classes(Selector::inNamespace('Modules\Invoices'))
-            ->shouldNotDependOn()
+            ->shouldNot()
+            ->dependOn()
             ->classes(
                 Selector::inNamespace('Modules\Notifications\Application'),
                 Selector::inNamespace('Modules\Notifications\Infrastructure'),
