@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/phpat/phpat/extension.neon
+
+parameters:
+    level: max
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - src/Modules/Notifications
+        - tests/Feature/Notification
+        - tests/Unit/Notification
+        - tests/TestCase.php
