@@ -1,0 +1,20 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "declare_strict_types": true
+    },
+    "exclude": [
+        "bootstrap",
+        "config",
+        "docker",
+        "public",
+        "routes",
+        "database/seeders",
+        "src/Modules/Notifications",
+        "tests/Feature/Notification",
+        "tests/Unit/Notification"
+    ],
+    "notPath": [
+        "tests/TestCase.php"
+    ]
+}
