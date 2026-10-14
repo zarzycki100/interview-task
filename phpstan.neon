@@ -12,3 +12,11 @@ parameters:
         - tests/Feature/Notification
         - tests/Unit/Notification
         - tests/TestCase.php
+    phpat:
+        ignore_built_in_classes: true
+
+services:
+    -
+        class: Tests\Architecture\ModuleBoundariesTest
+        tags:
+            - phpat.test
