@@ -40,7 +40,7 @@ final class ExceptionMapping
         ));
 
         $exceptions->render(static fn (NotificationHandOffFailed $e): JsonResponse => new JsonResponse(
-            ['message' => 'The invoice could not be sent. It is still a draft and can be sent again.', 'code' => 'notification_failed'],
+            ['message' => 'The invoice could not be handed over to the notification provider. Check its status before retrying.', 'code' => 'notification_failed'],
             Response::HTTP_BAD_GATEWAY,
         ));
     }
