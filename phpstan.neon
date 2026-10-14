@@ -4,6 +4,7 @@ includes:
 
 parameters:
     level: max
+    tmpDir: storage/framework/cache/phpstan
     paths:
         - src
         - tests
