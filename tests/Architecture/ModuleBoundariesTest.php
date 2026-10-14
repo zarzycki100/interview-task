@@ -32,8 +32,9 @@ final class ModuleBoundariesTest
             ->classes(
                 Selector::inNamespace('Modules\Invoices\Application'),
                 Selector::inNamespace('Modules\Invoices\Domain'),
+                Selector::inNamespace('Psr\Log'),
             )
-            ->because('use cases talk to the outside world only through ports (ADR-001)');
+            ->because('use cases talk to the outside world only through ports; PSR-3 logging is a standard abstraction (ADR-001)');
     }
 
     public function test_only_invoice_infrastructure_uses_the_notifications_api(): Rule
