@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoices\Http;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -39,6 +40,17 @@ final class ShowInvoiceTest extends TestCase
             ->assertOk()
             ->assertJsonPath('product_lines', [])
             ->assertJsonPath('total_price', 0);
+    }
+
+    public function test_viewing_an_invoice_does_not_change_it(): void
+    {
+        $id = $this->createInvoice([['name' => 'Consulting', 'quantity' => 1, 'unit_price' => 100]]);
+        $before = DB::table('invoices')->where('id', $id)->first();
+
+        $this->getJson("/api/invoices/{$id}")->assertOk();
+        $this->getJson("/api/invoices/{$id}")->assertOk();
+
+        $this->assertEquals($before, DB::table('invoices')->where('id', $id)->first());
     }
 
     public function test_an_unknown_invoice_is_not_found(): void
