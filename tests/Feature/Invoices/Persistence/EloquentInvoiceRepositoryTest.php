@@ -7,6 +7,7 @@ namespace Tests\Feature\Invoices\Persistence;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Modules\Invoices\Domain\Enums\StatusEnum;
+use Modules\Invoices\Domain\Exceptions\ConcurrentModification;
 use Modules\Invoices\Domain\Invoice;
 use Modules\Invoices\Domain\ValueObjects\Customer;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
@@ -92,6 +93,40 @@ final class EloquentInvoiceRepositoryTest extends TestCase
         }
     }
 
+    public function test_saving_a_status_change_bumps_the_version(): void
+    {
+        $id = $this->addDraftWithOneLine();
+        $invoice = $this->repository->find($id);
+        $this->assertNotNull($invoice);
+
+        $invoice->send();
+        $this->repository->save($invoice);
+
+        $reloaded = $this->repository->find($id);
+        $this->assertSame(StatusEnum::Sending, $reloaded?->status());
+        $this->assertSame(1, $reloaded->version());
+    }
+
+    public function test_a_stale_copy_cannot_be_saved(): void
+    {
+        $id = $this->addDraftWithOneLine();
+        $first = $this->repository->find($id);
+        $second = $this->repository->find($id);
+        $this->assertNotNull($first);
+        $this->assertNotNull($second);
+
+        $first->send();
+        $this->repository->save($first);
+        $second->send();
+
+        try {
+            $this->repository->save($second);
+            $this->fail('Expected the stale copy to be rejected.');
+        } catch (ConcurrentModification) {
+            $this->assertDatabaseHas('invoices', ['id' => $id->toString(), 'status' => 'sending', 'version' => 1]);
+        }
+    }
+
     public function test_the_database_rejects_an_unknown_status(): void
     {
         $invoice = Invoice::draft(InvoiceId::generate(), Customer::create('Jane Doe', 'jane@example.com'), []);
@@ -112,5 +147,15 @@ final class EloquentInvoiceRepositoryTest extends TestCase
         DB::table('invoices')->where('id', $invoice->id()->toString())->delete();
 
         $this->assertDatabaseCount('invoice_product_lines', 0);
+    }
+
+    private function addDraftWithOneLine(): InvoiceId
+    {
+        $invoice = Invoice::draft(InvoiceId::generate(), Customer::create('Jane Doe', 'jane@example.com'), [
+            ProductLine::create('Item', 1, 100),
+        ]);
+        $this->repository->add($invoice);
+
+        return $invoice->id();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Invoices\Infrastructure\Persistence;
 
 use Illuminate\Database\ConnectionInterface;
+use Modules\Invoices\Domain\Exceptions\ConcurrentModification;
 use Modules\Invoices\Domain\Invoice;
 use Modules\Invoices\Domain\InvoiceRepository;
 use Modules\Invoices\Domain\ValueObjects\InvoiceId;
@@ -26,6 +27,21 @@ final readonly class EloquentInvoiceRepository implements InvoiceRepository
                 ProductLineRecord::query()->insert($lines);
             }
         });
+    }
+
+    public function save(Invoice $invoice): void
+    {
+        $updated = InvoiceRecord::query()
+            ->whereKey($invoice->id()->toString())
+            ->where('version', $invoice->version())
+            ->update([
+                'status' => $invoice->status()->value,
+                'version' => $invoice->version() + 1,
+            ]);
+
+        if ($updated === 0) {
+            throw ConcurrentModification::of($invoice->id());
+        }
     }
 
     public function find(InvoiceId $id): ?Invoice
