@@ -1,0 +1,24 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/phpat/phpat/extension.neon
+
+parameters:
+    level: max
+    tmpDir: storage/framework/cache/phpstan
+    paths:
+        - app
+        - src
+        - tests
+    excludePaths:
+        - src/Modules/Notifications
+        - tests/Feature/Notification
+        - tests/Unit/Notification
+        - tests/TestCase.php
+    phpat:
+        ignore_built_in_classes: true
+
+services:
+    -
+        class: Tests\Architecture\ModuleBoundariesTest
+        tags:
+            - phpat.test
