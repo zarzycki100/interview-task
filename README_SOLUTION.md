@@ -23,7 +23,7 @@ What was done
 9. Fixes to the provided setup: start.sh failed on a fresh clone, port 5173 conflict,
    PHP 8.5 PDO deprecation, missing APP_KEY generation.
 10. 102 tests (unit, feature, architecture); `composer check` runs Pint, PHPStan (max) and PHPUnit.
-11. Postman collection in postman/ covering the main flow and error cases
+11. Postman collection in postman/ covering the main flow and error cases - only because it's not a production env
 
 
 I made the design decisions; Claude Code was used to implement them and to review bthe project for problems
